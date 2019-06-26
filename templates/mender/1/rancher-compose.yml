@@ -1,0 +1,88 @@
+.catalog:
+  name: "Mender"
+  version: "v1.0.2"
+  description: |
+    Mender Backend
+  questions:
+    - variable: MENDER_SCALE
+      type: int
+      required: true
+      default: 1
+      label: Scale
+      description: Scale Mender services to multiple instances
+    - variable: MENDER_VOLUME_DRIVER
+      type: enum
+      required: true
+      default: rexray-dobs
+      options:
+      - local
+      - rexray-dobs
+      label: Database volume driver
+      description: Volume driver of databases used by Mender services
+    - variable: MENDER_API_GATEWAY_CERT
+      type: certificate
+      required: true
+      label: API Gateway Certificate
+    - variable: USERADM_SERVER_PRIV_KEY_SECRET
+      type: multiline
+      required: true
+      label: "User Administration Key"
+    - variable: DEVICEAUTH_SERVER_PRIV_KEY_SECRET
+      type: multiline
+      required: true
+      label: "Device Authentication Key"
+    - variable: DEPLOYMENTS_S3_ACCESS_KEY
+      type: string
+      required: true
+      label: "Deployment Service: S3 Access Key"
+    - variable: DEPLOYMENTS_S3_SECRET_KEY
+      type: string
+      required: true
+      label: "Deployment Service: S3 Secret Key"
+    - variable: DEPLOYMENTS_S3_BUCKET_KEY
+      type: string
+      required: true
+      label: "Deployment Service: S3 Bucket"
+      description: S3 bucket where the uploaded images will be stored and served from
+    - variable: DEPLOYMENTS_S3_URI
+      type: string
+      required: true
+      default: "https://s3.amazonaws.com"
+      label: "Deployment Service: S3 URI"
+      description: "Do not modify this unless you want to use your own Minio server"
+
+version: '2'
+services:
+  lb:
+    lb_config:
+      certs: []
+      default_cert: '${MENDER_API_GATEWAY_CERT}'
+      port_rules:
+      - priority: 1
+        protocol: http
+        service: api-gateway
+        source_port: 80
+        target_port: 80
+      - priority: 2
+        protocol: https
+        service: api-gateway
+        source_port: 443
+        target_port: 80
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      reinitializing_timeout: 60000
+  useradm:
+    scale: ${MENDER_SCALE}
+  inventory:
+    scale: ${MENDER_SCALE}
+  device-adm:
+    scale: ${MENDER_SCALE}
+  deployments:
+    scale: ${MENDER_SCALE}
+  device-auth:
+    scale: ${MENDER_SCALE}
