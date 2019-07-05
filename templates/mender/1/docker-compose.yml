@@ -13,6 +13,7 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.start_once: 'true'
+
   useradm:
     image: mendersoftware/useradm:1.7.0
     environment:
@@ -26,6 +27,7 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.sidekicks: useradm-secrets
+
   mongo-device-auth:
     image: mongo:3.4
     stdin_open: true
@@ -35,6 +37,7 @@ services:
     tty: true
     labels:
       io.rancher.container.pull_image: always
+
   mongo-deployments:
     image: mongo:3.4
     stdin_open: true
@@ -44,6 +47,7 @@ services:
     - deployments:/data/db
     labels:
       io.rancher.container.pull_image: always
+
   inventory:
     image: mendersoftware/inventory:1.6.0
     stdin_open: true
@@ -52,6 +56,7 @@ services:
     - mongo-inventory:mongo-inventory
     labels:
       io.rancher.container.pull_image: always
+
   deployments:
     image: mendersoftware/deployments:1.7.0
     environment:
@@ -66,6 +71,7 @@ services:
     - mongo-deployments:mongo-deployments
     labels:
       io.rancher.container.pull_image: always
+
   lb:
     image: rancher/lb-service-haproxy:v0.7.5
     ports:
@@ -75,6 +81,7 @@ services:
       io.rancher.container.agent.role: environmentAdmin
       io.rancher.container.create_agent: 'true'
       io.rancher.scheduler.global: true
+
   api-gateway:
     image: mazefx/mender-api-gateway
     stdin_open: true
@@ -85,10 +92,10 @@ services:
     - device-auth:mender-device-auth
     - inventory:mender-inventory
     - useradm:mender-useradm
-    - device-adm:mender-device-adm
     labels:
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: true
+
   device-auth-secrets:
     image: gustavosbarreto/mender-secrets-provider
     environment:
@@ -102,12 +109,14 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.start_once: 'true'
+
   gui:
     image: mendersoftware/gui:2.0.0
     stdin_open: true
     tty: true
     labels:
       io.rancher.container.pull_image: always
+
   mongo-useradm:
     image: mongo:3.4
     stdin_open: true
@@ -117,6 +126,7 @@ services:
     tty: true
     labels:
       io.rancher.container.pull_image: always
+
   mongo-inventory:
     image: mongo:3.4
     stdin_open: true
@@ -126,6 +136,7 @@ services:
     tty: true
     labels:
       io.rancher.container.pull_image: always
+
   device-auth:
     image: mendersoftware/deviceauth:2.0.0
     environment:
