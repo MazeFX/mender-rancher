@@ -80,8 +80,6 @@ services:
     scale: ${MENDER_SCALE}
   inventory:
     scale: ${MENDER_SCALE}
-  device-adm:
-    scale: ${MENDER_SCALE}
   deployments:
     scale: ${MENDER_SCALE}
   device-auth:
