@@ -27,6 +27,7 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.sidekicks: useradm-secrets
+    command: server --automigrate
 
   mongo-device-auth:
     image: mongo:3.4
@@ -56,6 +57,7 @@ services:
     - mongo-inventory:mongo-inventory
     labels:
       io.rancher.container.pull_image: always
+    command: server --automigrate
 
   deployments:
     image: mazefx/mender-deployments:1.7.0
@@ -152,3 +154,4 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.sidekicks: device-auth-secrets
+    command: server --automigrate
