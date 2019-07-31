@@ -58,7 +58,7 @@ services:
       io.rancher.container.pull_image: always
 
   deployments:
-    image: mendersoftware/deployments:1.7.0
+    image: mazefx/mender-deployments:1.7.0
     environment:
       DEPLOYMENTS_AWS_AUTH_KEY: '${DEPLOYMENTS_S3_ACCESS_KEY}'
       DEPLOYMENTS_AWS_AUTH_SECRET: '${DEPLOYMENTS_S3_SECRET_KEY}'
