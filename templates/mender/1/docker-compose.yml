@@ -146,6 +146,8 @@ services:
       io.rancher.sidekicks: api-gateway-secrets
     volumes_from:
     - api-gateway-secrets
+    environment:
+      ALLOWED_HOSTS: '${GATEWAY_URL}'
 
   api-gateway-secrets:
     image: mazefx/mender-secrets-provider
