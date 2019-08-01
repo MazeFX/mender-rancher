@@ -176,6 +176,8 @@ services:
     tty: true
     labels:
       io.rancher.container.pull_image: always
+    environment:
+      GATEWAY_IP: '${GATEWAY_URL}'
 
 
 

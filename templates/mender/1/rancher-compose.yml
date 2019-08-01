@@ -23,6 +23,10 @@
       type: certificate
       required: true
       label: API Gateway Certificate for load balancer
+    - variable: GATEWAY_URL
+      type: string
+      required: true
+      label: "Gateway URL or IP"
     - variable: MENDER_API_GATEWAY_CERT
       type: multiline
       required: true
