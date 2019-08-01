@@ -1,64 +1,6 @@
 version: '2'
 services:
-  useradm-secrets:
-    image: gustavosbarreto/mender-secrets-provider
-    environment:
-      USERADM_SERVER_PRIV_KEY_SECRET: '${USERADM_SERVER_PRIV_KEY_SECRET}'
-    stdin_open: true
-    volumes:
-    - /run/secrets
-    tty: true
-    links:
-    - mongo-useradm:mongo-useradm
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.container.start_once: 'true'
-
-  useradm:
-    image: mendersoftware/useradm:1.7.0
-    environment:
-      USERADM_SERVER_PRIV_KEY_PATH: /run/secrets/USERADM_SERVER_PRIV_KEY
-    stdin_open: true
-    tty: true
-    links:
-    - mongo-useradm:mongo-useradm
-    volumes_from:
-    - useradm-secrets
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.sidekicks: useradm-secrets
-    command: server --automigrate
-
-  mongo-device-auth:
-    image: mongo:3.4
-    stdin_open: true
-    volume_driver: '${MENDER_VOLUME_DRIVER}'
-    volumes:
-    - deviceauth:/data/db
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
-
-  mongo-deployments:
-    image: mongo:3.4
-    stdin_open: true
-    tty: true
-    volume_driver: '${MENDER_VOLUME_DRIVER}'
-    volumes:
-    - deployments:/data/db
-    labels:
-      io.rancher.container.pull_image: always
-
-  inventory:
-    image: mendersoftware/inventory:1.6.0
-    stdin_open: true
-    tty: true
-    links:
-    - mongo-inventory:mongo-inventory
-    labels:
-      io.rancher.container.pull_image: always
-    command: server --automigrate
-
+  # Mender artifact deployments
   deployments:
     image: mazefx/mender-deployments:1.7.0
     environment:
@@ -74,50 +16,45 @@ services:
     labels:
       io.rancher.container.pull_image: always
 
-  lb:
-    image: rancher/lb-service-haproxy:v0.7.5
-    ports:
-    - 80:80/tcp
-    - 443:443/tcp
+  mongo-deployments:
+    image: mongo:3.4
+    stdin_open: true
+    tty: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - deployments:/data/db
     labels:
-      io.rancher.container.agent.role: environmentAdmin
-      io.rancher.container.create_agent: 'true'
-      io.rancher.scheduler.global: true
+      io.rancher.container.pull_image: always
 
-  api-gateway:
-    image: mazefx/mender-api-gateway
+  # User Admission
+  useradm:
+    image: mendersoftware/useradm:1.7.0
+    environment:
+      USERADM_SERVER_PRIV_KEY_PATH: /run/secrets/USERADM_SERVER_PRIV_KEY
     stdin_open: true
     tty: true
     links:
-    - deployments:mender-deployments
-    - gui:mender-gui
-    - device-auth:mender-device-auth
-    - inventory:mender-inventory
-    - useradm:mender-useradm
+    - mongo-useradm:mongo-useradm
+    volumes_from:
+    - useradm-secrets
     labels:
       io.rancher.container.pull_image: always
-      io.rancher.scheduler.global: true
+      io.rancher.sidekicks: useradm-secrets
+    command: server --automigrate
 
-  device-auth-secrets:
+  useradm-secrets:
     image: gustavosbarreto/mender-secrets-provider
     environment:
-      DEVICEAUTH_SERVER_PRIV_KEY_SECRET: '${DEVICEAUTH_SERVER_PRIV_KEY_SECRET}'
+      USERADM_SERVER_PRIV_KEY_SECRET: '${USERADM_SERVER_PRIV_KEY_SECRET}'
     stdin_open: true
     volumes:
     - /run/secrets
     tty: true
     links:
-    - mongo-device-auth:mongo-device-auth
+    - mongo-useradm:mongo-useradm
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.start_once: 'true'
-
-  gui:
-    image: mendersoftware/gui:2.0.0
-    stdin_open: true
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
 
   mongo-useradm:
     image: mongo:3.4
@@ -129,16 +66,7 @@ services:
     labels:
       io.rancher.container.pull_image: always
 
-  mongo-inventory:
-    image: mongo:3.4
-    stdin_open: true
-    volume_driver: '${MENDER_VOLUME_DRIVER}'
-    volumes:
-    - inventory:/data/db
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
-
+  # Device Authentication
   device-auth:
     image: mendersoftware/deviceauth:2.0.0
     environment:
@@ -155,3 +83,102 @@ services:
       io.rancher.container.pull_image: always
       io.rancher.sidekicks: device-auth-secrets
     command: server --automigrate
+
+  device-auth-secrets:
+    image: gustavosbarreto/mender-secrets-provider
+    environment:
+      DEVICEAUTH_SERVER_PRIV_KEY_SECRET: '${DEVICEAUTH_SERVER_PRIV_KEY_SECRET}'
+    stdin_open: true
+    volumes:
+    - /run/secrets
+    tty: true
+    links:
+    - mongo-device-auth:mongo-device-auth
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: 'true'
+
+  mongo-device-auth:
+    image: mongo:3.4
+    stdin_open: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - deviceauth:/data/db
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+  # Mender Inventory
+  inventory:
+    image: mendersoftware/inventory:1.6.0
+    stdin_open: true
+    tty: true
+    links:
+    - mongo-inventory:mongo-inventory
+    labels:
+      io.rancher.container.pull_image: always
+    command: server --automigrate
+
+  mongo-inventory:
+    image: mongo:3.4
+    stdin_open: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - inventory:/data/db
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+  # API gateway
+  api-gateway:
+    image: mazefx/mender-api-gateway
+    stdin_open: true
+    tty: true
+    links:
+    - deployments:mender-deployments
+    - gui:mender-gui
+    - device-auth:mender-device-auth
+    - inventory:mender-inventory
+    - useradm:mender-useradm
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: true
+      io.rancher.sidekicks: api-gateway-secrets
+    volumes_from:
+    - api-gateway-secrets
+
+  api-gateway-secrets:
+    image: mazefx/mender-secrets-provider
+    environment:
+      MENDER_API_GATEWAY_CERT_SECRET: '${MENDER_API_GATEWAY_CERT}'
+      MENDER_API_GATEWAY_PRIV_KEY_SECRET: '${MENDER_API_GATEWAY_PRIV_KEY_SECRET}'
+    stdin_open: true
+    volumes:
+    - /var/www/mendersoftware/cert
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: 'true'
+
+  lb:
+    image: rancher/lb-service-haproxy:v0.7.5
+    ports:
+    - 80:80/tcp
+    - 443:443/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.global: true
+
+  gui:
+    image: mendersoftware/gui:2.0.0
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+
+
+
+
+

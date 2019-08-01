@@ -19,10 +19,18 @@
       - rexray-dobs
       label: Database volume driver
       description: Volume driver of databases used by Mender services
-    - variable: MENDER_API_GATEWAY_CERT
+    - variable: MENDER_LB_API_GATEWAY_CERT
       type: certificate
       required: true
-      label: API Gateway Certificate
+      label: API Gateway Certificate for load balancer
+    - variable: MENDER_API_GATEWAY_CERT
+      type: multiline
+      required: true
+      label: "Mender API gateway certificate"
+    - variable: MENDER_API_GATEWAY_PRIV_KEY_SECRET
+      type: multiline
+      required: true
+      label: "Mender API gateway private key"
     - variable: USERADM_SERVER_PRIV_KEY_SECRET
       type: multiline
       required: true
@@ -56,7 +64,7 @@ services:
   lb:
     lb_config:
       certs: []
-      default_cert: '${MENDER_API_GATEWAY_CERT}'
+      default_cert: '${MENDER_LB_API_GATEWAY_CERT}'
       port_rules:
       - priority: 1
         protocol: http
