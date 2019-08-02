@@ -150,13 +150,12 @@ services:
       ALLOWED_HOSTS: '${GATEWAY_URL}'
 
   api-gateway-secrets:
-    image: mazefx/mender-secrets-provider
-    environment:
-      MENDER_API_GATEWAY_CERT_SECRET: '${MENDER_API_GATEWAY_CERT}'
-      MENDER_API_GATEWAY_PRIV_KEY_SECRET: '${MENDER_API_GATEWAY_PRIV_KEY_SECRET}'
+    image: gustavosbarreto/mender-secrets-provider
     stdin_open: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
     volumes:
-    - /var/www/mendersoftware/cert
+    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/fullchain.pem:/var/www/mendersoftware/cert/cert.crt
+    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/privkey.pem:/var/www/mendersoftware/cert/private.key
     tty: true
     labels:
       io.rancher.container.pull_image: always
