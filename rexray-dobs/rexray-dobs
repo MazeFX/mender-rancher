@@ -23,7 +23,12 @@ create() {
     VOLUME_SIZE=${OPTS[size]}
 
     if [ -z "$VOLUME_SIZE" ]; then
-        VOLUME_SIZE=$DEFAULT_VOLUME_SIZE
+        if [ VOLUME_NAME == *"letsencrypt"* ]; then
+            VOLUME_SIZE=1
+        else
+            VOLUME_SIZE=$DEFAULT_VOLUME_SIZE
+        fi
+
     fi
 
     VOLUME_ID=`rexray volume get --format jsonp $VOLUME_NAME | jq -r '.[].id' 2> /dev/null`

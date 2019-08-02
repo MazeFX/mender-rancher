@@ -2,7 +2,7 @@ version: '2'
 
 services:
   rexray-dobs-driver:
-    image: gustavosbarreto/mender-rexray-dobs-driver
+    image: mazefx/mender-rexray-dobs-driver
     privileged: true
     network_mode: host
     stdin_open: true
