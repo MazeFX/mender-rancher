@@ -40,8 +40,6 @@ services:
       NS1_API_KEY: "${NS1_API_KEY}"
     {{- if .Values.STORAGE_DRIVER}}
     volume_driver: {{.Values.STORAGE_DRIVER}}
-    storage_opt:
-      size: '1G'
     {{- end }}
     volumes:
       - /var/lib/rancher:/var/lib/rancher
