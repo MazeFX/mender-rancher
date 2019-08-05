@@ -38,9 +38,6 @@ services:
       AURORA_KEY: "${AURORA_KEY}"
       AURORA_ENDPOINT: "${AURORA_ENDPOINT}"
       NS1_API_KEY: "${NS1_API_KEY}"
-    {{- if .Values.STORAGE_DRIVER}}
-    volume_driver: {{.Values.STORAGE_DRIVER}}
-    {{- end }}
     volumes:
       - /var/lib/rancher:/var/lib/rancher
       {{- if .Values.VOLUME_NAME}}
@@ -52,3 +49,9 @@ services:
       {{- if eq .Values.RUN_ONCE "true" }}
       io.rancher.container.start_once: "true"
       {{- end }}
+
+{{- if .Values.VOLUME_NAME}}
+volumes:
+  {{.Values.VOLUME_NAME}}:
+    driver: {{.Values.STORAGE_DRIVER}}
+{{- end }}
