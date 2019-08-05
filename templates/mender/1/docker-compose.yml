@@ -143,23 +143,24 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.scheduler.global: true
-      io.rancher.sidekicks: api-gateway-secrets
-    volumes_from:
-    - api-gateway-secrets
+    volumes:
+    - certs
     environment:
       ALLOWED_HOSTS: '${GATEWAY_URL}'
+      CERT_LOCTION: '${CERT_VOL_LOCATION}'
+      CERT_NAME: '${MENDER_API_GATEWAY_CERT}'
 
-  api-gateway-secrets:
-    image: gustavosbarreto/mender-secrets-provider
-    stdin_open: true
-    volume_driver: '${MENDER_VOLUME_DRIVER}'
-    volumes:
-    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/fullchain.pem:/var/www/mendersoftware/cert/cert.crt
-    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/privkey.pem:/var/www/mendersoftware/cert/private.key
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.container.start_once: 'true'
+#  api-gateway-secrets:
+#    image: gustavosbarreto/mender-secrets-provider
+#    stdin_open: true
+#    volume_driver: '${MENDER_VOLUME_DRIVER}'
+#    volumes:
+#    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/fullchain.pem:/var/www/mendersoftware/cert/cert.crt
+#    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/privkey.pem:/var/www/mendersoftware/cert/private.key
+#    tty: true
+#    labels:
+#      io.rancher.container.pull_image: always
+#      io.rancher.container.start_once: 'true'
 
   lb:
     image: rancher/lb-service-haproxy:v0.7.5
@@ -181,7 +182,10 @@ services:
       GATEWAY_IP: '${GATEWAY_URL}'
 
 
-
+volumes:
+  certs:
+    driver: rancher-nfs
+    external: true
 
 
 

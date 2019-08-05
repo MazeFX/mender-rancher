@@ -10,6 +10,7 @@
       default: 1
       label: Scale
       description: Scale Mender services to multiple instances
+
     - variable: MENDER_VOLUME_DRIVER
       type: enum
       required: true
@@ -19,35 +20,48 @@
       - rexray-dobs
       label: Database volume driver
       description: Volume driver of databases used by Mender services
+
     - variable: MENDER_API_GATEWAY_CERT
       type: certificate
       required: true
       label: API Gateway Certificate for load balancer
+
+    - variable: CERT_VOL_LOCATION
+      type: string
+      required: true
+      label: "Location of the certificate on the shared volume"
+
     - variable: GATEWAY_URL
       type: string
       required: true
       label: "Gateway URL or IP"
+
     - variable: USERADM_SERVER_PRIV_KEY_SECRET
       type: multiline
       required: true
       label: "User Administration Key"
+
     - variable: DEVICEAUTH_SERVER_PRIV_KEY_SECRET
       type: multiline
       required: true
       label: "Device Authentication Key"
+
     - variable: DEPLOYMENTS_S3_ACCESS_KEY
       type: string
       required: true
       label: "Deployment Service: S3 Access Key"
+
     - variable: DEPLOYMENTS_S3_SECRET_KEY
       type: string
       required: true
       label: "Deployment Service: S3 Secret Key"
+
     - variable: DEPLOYMENTS_S3_BUCKET_KEY
       type: string
       required: true
       label: "Deployment Service: S3 Bucket"
       description: S3 bucket where the uploaded images will be stored and served from
+
     - variable: DEPLOYMENTS_S3_URI
       type: string
       required: true
