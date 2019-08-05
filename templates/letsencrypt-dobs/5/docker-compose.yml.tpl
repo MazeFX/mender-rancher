@@ -54,4 +54,5 @@ services:
 volumes:
   {{.Values.VOLUME_NAME}}:
     driver: {{.Values.STORAGE_DRIVER}}
+    external: true
 {{- end }}
