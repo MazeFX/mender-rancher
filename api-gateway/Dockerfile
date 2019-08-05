@@ -1,6 +1,7 @@
 FROM mendersoftware/api-gateway:2.0.0
 
 RUN mkdir /usr/local/openresty/nginx/conf.d
+RUN mkdir /certs
 
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY nginx-ssl.conf /usr/local/openresty/nginx/conf.d/nginx-ssl.conf
