@@ -82,7 +82,7 @@ services:
         source_port: 80
         target_port: 80
       - priority: 2
-        protocol: https
+        protocol: http
         service: api-gateway
         source_port: 443
         target_port: 443
