@@ -134,6 +134,9 @@ services:
     image: mazefx/mender-api-gateway
     stdin_open: true
     tty: true
+    ports:
+      # list of ports API gateway is made available on
+      - 443:443
     links:
     - deployments:mender-deployments
     - gui:mender-gui
