@@ -163,7 +163,7 @@ services:
 #      io.rancher.container.start_once: 'true'
 
   lb:
-    image: rancher/lb-service-haproxy:v0.7.5
+    image: rancher/lb-service-haproxy:v0.9.13
     ports:
     - 80:80/tcp
     - 443:443/tcp
