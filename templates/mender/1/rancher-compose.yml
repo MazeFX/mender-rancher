@@ -85,7 +85,7 @@ services:
         protocol: https
         service: api-gateway
         source_port: 443
-        target_port: 80
+        target_port: 443
     health_check:
       healthy_threshold: 2
       response_timeout: 2000
