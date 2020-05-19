@@ -121,6 +121,8 @@ services:
 
   conductor-elasticsearch:
     image: elasticsearch:5-alpine
+    labels:
+      io.rancher.scheduler.affinity:host_label: mem_cap=2
 
   conductor-redis:
     image: redis:5-alpine3.8
