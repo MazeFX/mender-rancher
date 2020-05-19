@@ -121,6 +121,8 @@ services:
 
   conductor-elasticsearch:
     image: elasticsearch:5-alpine
+    environment:
+      - ES_JAVA_OPTS=-Xms0m -Xmx512m
     labels:
       io.rancher.scheduler.affinity:host_label: mem_cap=2
 
