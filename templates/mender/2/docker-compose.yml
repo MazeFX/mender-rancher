@@ -1,0 +1,209 @@
+version: '2'
+services:
+  # Mender artifact deployments
+  deployments:
+    image: mazefx/mender-deployments:1.7.0
+    environment:
+      DEPLOYMENTS_AWS_AUTH_KEY: '${DEPLOYMENTS_S3_ACCESS_KEY}'
+      DEPLOYMENTS_AWS_AUTH_SECRET: '${DEPLOYMENTS_S3_SECRET_KEY}'
+      DEPLOYMENTS_AWS_BUCKET: '${DEPLOYMENTS_S3_BUCKET_KEY}'
+      DEPLOYMENTS_AWS_URI: '${DEPLOYMENTS_S3_URI}'
+      DEPLOYMENTS_MENDER_GATEWAY: http://inventory:8080
+    stdin_open: true
+    tty: true
+    links:
+    - mongo-deployments:mongo-deployments
+    labels:
+      io.rancher.container.pull_image: always
+
+  mongo-deployments:
+    image: mongo:3.4
+    stdin_open: true
+    tty: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - deployments:/data/db
+    labels:
+      io.rancher.container.pull_image: always
+
+  # User Admission
+  useradm:
+    image: mendersoftware/useradm:1.7.0
+    environment:
+      USERADM_SERVER_PRIV_KEY_PATH: /run/secrets/USERADM_SERVER_PRIV_KEY
+    stdin_open: true
+    tty: true
+    links:
+    - mongo-useradm:mongo-useradm
+    volumes_from:
+    - useradm-secrets
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: useradm-secrets
+    command: server --automigrate
+
+  useradm-secrets:
+    image: gustavosbarreto/mender-secrets-provider
+    environment:
+      USERADM_SERVER_PRIV_KEY_SECRET: '${USERADM_SERVER_PRIV_KEY_SECRET}'
+    stdin_open: true
+    volumes:
+    - /run/secrets
+    tty: true
+    links:
+    - mongo-useradm:mongo-useradm
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: 'true'
+
+  mongo-useradm:
+    image: mongo:3.4
+    stdin_open: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - useradm:/data/db
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+  # Device Authentication
+  device-auth:
+    image: mendersoftware/deviceauth:2.0.0
+    environment:
+      DEVICEAUTH_SERVER_PRIV_KEY_PATH: /run/secrets/DEVICEAUTH_SERVER_PRIV_KEY
+      DEVICEAUTH_DEVADM_ADDR: http://device-adm:8080
+      DEVICEAUTH_INVENTORY_ADDR: http://inventory:8080
+    stdin_open: true
+    tty: true
+    links:
+    - mongo-device-auth:mongo-device-auth
+    - conductor:mender-conductor
+    volumes_from:
+    - device-auth-secrets
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: device-auth-secrets
+    command: server --automigrate
+
+  device-auth-secrets:
+    image: gustavosbarreto/mender-secrets-provider
+    environment:
+      DEVICEAUTH_SERVER_PRIV_KEY_SECRET: '${DEVICEAUTH_SERVER_PRIV_KEY_SECRET}'
+    stdin_open: true
+    volumes:
+    - /run/secrets
+    tty: true
+    links:
+    - mongo-device-auth:mongo-device-auth
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: 'true'
+
+  mongo-device-auth:
+    image: mongo:3.4
+    stdin_open: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - deviceauth:/data/db
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+  # Conductor service
+  conductor:
+    image: mendersoftware/mender-conductor:1.3.x
+    depends_on:
+      - conductor-elasticsearch
+      - conductor-redis
+    links:
+      - conductor-elasticsearch:mender-elasticsearch
+      - conductor-redis:mender-redis
+
+  conductor-elasticsearch:
+    image: elasticsearch:5-alpine
+
+  conductor-redis:
+    image: redis:5-alpine3.8
+
+  # Mender Inventory
+  inventory:
+    image: mendersoftware/inventory:1.6.0
+    stdin_open: true
+    tty: true
+    links:
+    - mongo-inventory:mongo-inventory
+    labels:
+      io.rancher.container.pull_image: always
+    command: server --automigrate
+
+  mongo-inventory:
+    image: mongo:3.4
+    stdin_open: true
+    volume_driver: '${MENDER_VOLUME_DRIVER}'
+    volumes:
+    - inventory:/data/db
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+
+  # API gateway
+  api-gateway:
+    image: mazefx/mender-api-gateway
+    stdin_open: true
+    tty: true
+    links:
+    - deployments:mender-deployments
+    - gui:mender-gui
+    - device-auth:mender-device-auth
+    - inventory:mender-inventory
+    - useradm:mender-useradm
+    - conductor:mender-conductor
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: true
+    volumes:
+    - certs:/certs
+    environment:
+      ALLOWED_HOSTS: '${GATEWAY_URL}'
+      CERT_LOCTION: '${CERT_VOL_LOCATION}'
+      CERT_NAME: '${MENDER_API_GATEWAY_CERT}'
+
+#  api-gateway-secrets:
+#    image: gustavosbarreto/mender-secrets-provider
+#    stdin_open: true
+#    volume_driver: '${MENDER_VOLUME_DRIVER}'
+#    volumes:
+#    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/fullchain.pem:/var/www/mendersoftware/cert/cert.crt
+#    - mender-letsencrypt/etc/letsencrypt/production/certs/${MENDER_API_GATEWAY_CERT}/privkey.pem:/var/www/mendersoftware/cert/private.key
+#    tty: true
+#    labels:
+#      io.rancher.container.pull_image: always
+#      io.rancher.container.start_once: 'true'
+
+  lb:
+    image: rancher/lb-service-haproxy:v0.9.13
+    ports:
+    - 80:80/tcp
+    - 443:443/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+      io.rancher.scheduler.global: true
+
+  gui:
+    image: mendersoftware/gui:2.0.0
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+    environment:
+      GATEWAY_IP: '${GATEWAY_URL}'
+
+
+volumes:
+  certs:
+    driver: rancher-nfs
+    external: true
+
+
+
